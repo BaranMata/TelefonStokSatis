@@ -1,0 +1,28 @@
+sequenceDiagram
+    autonumber
+    actor K as Kullanıcı (satış yetkili)
+    participant UI as React arayüzü
+    participant API as Express API
+    participant MW as Ara katmanlar
+    participant DB as SQLite
+
+    K->>UI: IMEI / barkod okutur
+    UI->>API: GET /api/devices/lookup?code=...
+    API->>DB: SELECT ... WHERE tenant_id = ? AND (imei = ? OR barcode = ?)
+    DB-->>UI: cihaz (stokta)
+    K->>UI: Fiyatı onaylar, "Satışı tamamla"
+    UI->>API: POST /api/sales {items, customerId, paymentMethod}
+    API->>MW: oturum · kiracı · abonelik · modül(sales) · yetki(sale.create)
+    MW-->>API: geçti
+    API->>DB: BEGIN IMMEDIATE
+    API->>DB: INSERT transactions
+    API->>DB: UPDATE devices SET status='sold' WHERE id=? AND tenant_id=? AND status IN (stokta / bu müşteriye rezerve)
+    alt etkilenen satır = 1
+        API->>DB: INSERT transaction_items (unit_cost sabitlenir), stock_movements
+        API->>DB: COMMIT
+        API->>DB: INSERT audit_logs (sale.create)
+        API-->>UI: 201 {gelir, maliyet, kâr}
+    else etkilenen satır = 0 (başka istek önce sattı)
+        API->>DB: ROLLBACK
+        API-->>UI: 409 DEVICE_NOT_AVAILABLE
+    end

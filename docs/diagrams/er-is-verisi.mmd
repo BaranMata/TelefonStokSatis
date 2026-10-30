@@ -1,0 +1,90 @@
+erDiagram
+    %% İş verisi: her tabloda tenant_id (kiracı) bulunur; TENANTS ve USERS ilişkileri er-platform diyagramındadır.
+    SUPPLIERS |o--o{ TRANSACTIONS : "tedarikçi"
+    CUSTOMERS |o--o{ TRANSACTIONS : "müşteri"
+    TRANSACTIONS ||--|{ TRANSACTION_ITEMS : "kalem"
+    TRANSACTIONS |o--o{ STOCK_MOVEMENTS : "kaynak işlem"
+    DEVICES ||--o{ TRANSACTION_ITEMS : "cihaz"
+    DEVICES ||--o{ STOCK_MOVEMENTS : "hareket"
+    STOCK_COUNTS ||--o{ STOCK_COUNT_SCANS : "okutma"
+    DEVICES |o--o{ STOCK_COUNT_SCANS : "eşleşen cihaz"
+    CUSTOMERS |o--o{ DEVICES : "rezerve"
+
+    DEVICES {
+        int id PK
+        int tenant_id FK
+        text brand
+        text model
+        text storage
+        text color
+        text imei "UK(tenant_id, imei)"
+        text serial_no
+        text barcode "UK(tenant_id, barcode)"
+        text condition
+        real purchase_price
+        real list_price
+        real sale_price
+        text status "in_stock|reserved|sold"
+        int reserved_for FK
+        int version "iyimser kilit"
+    }
+    TRANSACTIONS {
+        int id PK
+        int tenant_id FK
+        text type "purchase|sale|trade"
+        int customer_id FK
+        int supplier_id FK
+        real total_in
+        real total_out
+        real net_amount "takas bedeli"
+        text payment_method
+        text payment_status
+        text occurred_at
+        int user_id FK
+    }
+    TRANSACTION_ITEMS {
+        int id PK
+        int transaction_id FK
+        int device_id FK
+        text direction "in|out"
+        real unit_price
+        real unit_cost "kâr hesabı için sabitlenir"
+    }
+    CUSTOMERS {
+        int id PK
+        int tenant_id FK
+        text full_name
+        text phone
+        text national_id
+    }
+    SUPPLIERS {
+        int id PK
+        int tenant_id FK
+        text name
+        text tax_no
+    }
+    STOCK_MOVEMENTS {
+        int id PK
+        int tenant_id FK
+        int device_id FK
+        text type
+        text from_status
+        text to_status
+        int transaction_id FK
+        int user_id FK
+    }
+    STOCK_COUNTS {
+        int id PK
+        int tenant_id FK
+        text status "open|closed"
+        int expected
+        int found
+        int missing
+    }
+    STOCK_COUNT_SCANS {
+        int id PK
+        int count_id FK
+        text code
+        int device_id FK
+        text result "ok|not_in_stock|unknown"
+    }

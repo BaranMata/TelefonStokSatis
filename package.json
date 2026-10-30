@@ -1,0 +1,24 @@
+{
+  "name": "telefon-saas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Telefon Stok ve Satış Takip Sistemi - çok kiracılı SaaS (staj projesi)",
+  "scripts": {
+    "setup": "npm install --prefix server && npm install --prefix client && npm run build && npm run demo:seed",
+    "build": "npm run build --prefix client",
+    "seed": "npm run seed --prefix server",
+    "demo:seed": "npm run demo:seed --prefix server",
+    "start": "npm start --prefix server",
+    "demo": "npm run demo --prefix server",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "test": "npm test --prefix server",
+    "backup": "npm run backup --prefix server",
+    "restore": "npm run restore --prefix server --",
+    "screenshots": "node scripts/screenshots.mjs",
+    "diagrams": "node scripts/diagrams.mjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^23.11.1"
+  }
+}

@@ -1,0 +1,117 @@
+erDiagram
+    %% Platform, kimlik, abonelik ve günlükler. TENANTS ve USERS, iş verisi tablolarına tenant_id / user_id ile bağlanır.
+    PLANS ||--o{ SUBSCRIPTIONS : "plan"
+    PLANS ||--o{ PAYMENTS : "plan"
+    TENANTS ||--o{ SUBSCRIPTIONS : "abonelik"
+    TENANTS ||--o{ PAYMENTS : "ödeme"
+    SUBSCRIPTIONS |o--o{ PAYMENTS : "karşılık gelen"
+    TENANTS ||--o{ USERS : "personel"
+    TENANTS ||--o{ INVITATIONS : "davet"
+    USERS ||--o{ INVITATIONS : "davet eden"
+    USERS ||--o{ PASSWORD_RESETS : "şifre yenileme"
+
+    PLANS {
+        int id PK
+        text code UK
+        text name
+        real price_monthly
+        real price_yearly
+        int max_users "-1 sınırsız"
+        int max_devices "-1 sınırsız"
+        json modules
+        bool is_trial
+        int trial_days
+    }
+    TENANTS {
+        int id PK
+        text name
+        text slug UK
+        text tax_no
+        text status "active|suspended|closed"
+    }
+    SUBSCRIPTIONS {
+        int id PK
+        int tenant_id FK
+        int plan_id FK
+        text billing_cycle "trial|monthly|yearly"
+        text status "active|expired|replaced"
+        text starts_at
+        text ends_at
+    }
+    PAYMENTS {
+        int id PK
+        int tenant_id FK
+        int subscription_id FK
+        int plan_id FK
+        real amount
+        text provider
+        text provider_ref
+        text status "pending|succeeded|failed"
+    }
+    USERS {
+        int id PK
+        int tenant_id FK "süper adminde NULL"
+        text email UK
+        text password_hash "bcrypt"
+        text role "super_admin|tenant_admin|user"
+        json permissions
+        bool is_active
+        int token_version
+        int failed_login_count
+        text locked_until
+    }
+    INVITATIONS {
+        int id PK
+        int tenant_id FK
+        text email
+        text role
+        json permissions
+        text token_hash UK "SHA-256"
+        text expires_at
+    }
+    PASSWORD_RESETS {
+        int id PK
+        int user_id FK
+        text token_hash UK
+        text expires_at
+        text used_at
+    }
+
+%% ---
+erDiagram
+    %% Günlük tabloları: audit_logs.tenant_id/user_id FK; error_logs, backup_logs ve mail_outbox bağımsız kayıtlardır.
+    AUDIT_LOGS {
+        int id PK
+        int tenant_id FK
+        int user_id FK
+        text action
+        text entity
+        int entity_id
+        json details
+        text ip
+    }
+    ERROR_LOGS {
+        int id PK
+        int tenant_id
+        int user_id
+        text method
+        text path
+        int status
+        text message
+        text stack
+    }
+    BACKUP_LOGS {
+        int id PK
+        text file_name
+        int size_bytes
+        text kind "auto|manual|pre_restore|restore"
+        int user_id
+        text created_at
+    }
+    MAIL_OUTBOX {
+        int id PK
+        text to_email
+        text subject
+        text body
+        text created_at
+    }

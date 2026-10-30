@@ -1,0 +1,28 @@
+flowchart TB
+    subgraph Istemci["İstemci (tarayıcı)"]
+        UI["React SPA<br/>(Vite derlemesi)<br/>rol bazlı menü ve ekranlar"]
+    end
+
+    subgraph Sunucu["Node.js / Express sunucusu"]
+        direction TB
+        MW1["helmet · JSON ayrıştırma · çerez"]
+        MW2["CSRF başlık kontrolü"]
+        MW3["authenticate<br/>JWT (HttpOnly çerez) + kullanıcı/işletme durumu"]
+        MW4["requireRole / requireTenant<br/>kiracı kimliği yalnızca oturumdan"]
+        MW5["requireActiveSubscription · requireModule<br/>requirePermission"]
+        R["Rotalar<br/>auth · profile · admin · business<br/>devices · purchases/sales/trades<br/>customers · suppliers · reports · stock-counts"]
+        S["Servisler<br/>inventory · subscription · backup<br/>exporter (Excel/PDF) · audit · mail"]
+        P["PaymentProvider (soyut)<br/>└ MockPaymentProvider"]
+        EH["errorHandler → error_logs"]
+        MW1 --> MW2 --> MW3 --> MW4 --> MW5 --> R --> S
+        S --> P
+        R -.hata.-> EH
+    end
+
+    DB[("SQLite<br/>data/app.db<br/>WAL modu")]
+    BK[("backups/<br/>VACUUM INTO kopyaları")]
+
+    UI -- "HTTP(S) · JSON /api/* · statik dosyalar" --> MW1
+    S --> DB
+    S -- "zamanlanmış + manuel yedek" --> BK
+    BK -- "geri yükleme" --> DB

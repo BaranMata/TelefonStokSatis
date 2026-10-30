@@ -1,0 +1,36 @@
+{
+  "name": "telefon-saas-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Telefon Stok ve Satış Takip Sistemi - REST API sunucusu",
+  "type": "commonjs",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.js",
+    "dev": "node --disable-warning=ExperimentalWarning --watch src/server.js",
+    "demo": "node --env-file=demo.env --disable-warning=ExperimentalWarning src/server.js",
+    "seed": "node --disable-warning=ExperimentalWarning src/db/seed.js",
+    "demo:seed": "node --env-file=demo.env --disable-warning=ExperimentalWarning src/db/seed.js",
+    "backup": "node --disable-warning=ExperimentalWarning src/scripts/backup-cli.js backup",
+    "restore": "node --disable-warning=ExperimentalWarning src/scripts/backup-cli.js restore",
+    "test": "node --disable-warning=ExperimentalWarning --test --test-concurrency=1 \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "dejavu-fonts-ttf": "^2.37.3",
+    "exceljs": "^4.4.0",
+    "express": "^4.22.3",
+    "express-rate-limit": "^8.7.2",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "pdfkit": "^0.20.2",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1"
+  }
+}

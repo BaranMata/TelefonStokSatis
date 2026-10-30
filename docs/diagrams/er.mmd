@@ -1,0 +1,182 @@
+erDiagram
+    PLANS ||--o{ SUBSCRIPTIONS : "plan"
+    PLANS ||--o{ PAYMENTS : "plan"
+    TENANTS ||--o{ SUBSCRIPTIONS : "abonelik"
+    TENANTS ||--o{ PAYMENTS : "ödeme"
+    SUBSCRIPTIONS |o--o{ PAYMENTS : "karşılık gelen"
+    TENANTS ||--o{ USERS : "personel"
+    TENANTS ||--o{ INVITATIONS : "davet"
+    USERS ||--o{ INVITATIONS : "davet eden"
+    USERS ||--o{ PASSWORD_RESETS : "şifre yenileme"
+    TENANTS ||--o{ CUSTOMERS : "müşteri"
+    TENANTS ||--o{ SUPPLIERS : "tedarikçi"
+    TENANTS ||--o{ DEVICES : "stok"
+    TENANTS ||--o{ TRANSACTIONS : "işlem"
+    CUSTOMERS |o--o{ TRANSACTIONS : "müşteri"
+    SUPPLIERS |o--o{ TRANSACTIONS : "tedarikçi"
+    USERS ||--o{ TRANSACTIONS : "işlemi yapan"
+    TRANSACTIONS ||--|{ TRANSACTION_ITEMS : "kalem"
+    DEVICES ||--o{ TRANSACTION_ITEMS : "cihaz"
+    DEVICES ||--o{ STOCK_MOVEMENTS : "hareket"
+    TRANSACTIONS |o--o{ STOCK_MOVEMENTS : "kaynak işlem"
+    CUSTOMERS |o--o{ DEVICES : "rezerve"
+    TENANTS ||--o{ STOCK_COUNTS : "sayım"
+    STOCK_COUNTS ||--o{ STOCK_COUNT_SCANS : "okutma"
+    DEVICES |o--o{ STOCK_COUNT_SCANS : "eşleşen cihaz"
+    TENANTS |o--o{ AUDIT_LOGS : "denetim"
+    USERS |o--o{ AUDIT_LOGS : "kullanıcı"
+
+    PLANS {
+        int id PK
+        text code UK
+        text name
+        real price_monthly
+        real price_yearly
+        int max_users "-1 sınırsız"
+        int max_devices "-1 sınırsız"
+        json modules
+        bool is_trial
+        int trial_days
+    }
+    TENANTS {
+        int id PK
+        text name
+        text slug UK
+        text tax_no
+        text status "active|suspended|closed"
+    }
+    SUBSCRIPTIONS {
+        int id PK
+        int tenant_id FK
+        int plan_id FK
+        text billing_cycle "trial|monthly|yearly"
+        text status "active|expired|replaced"
+        text starts_at
+        text ends_at
+    }
+    PAYMENTS {
+        int id PK
+        int tenant_id FK
+        int subscription_id FK
+        int plan_id FK
+        real amount
+        text provider
+        text provider_ref
+        text status "pending|succeeded|failed"
+    }
+    USERS {
+        int id PK
+        int tenant_id FK "süper adminde NULL"
+        text email UK
+        text password_hash "bcrypt"
+        text role "super_admin|tenant_admin|user"
+        json permissions
+        bool is_active
+        int token_version
+        int failed_login_count
+        text locked_until
+    }
+    INVITATIONS {
+        int id PK
+        int tenant_id FK
+        text email
+        text role
+        json permissions
+        text token_hash UK "SHA-256"
+        text expires_at
+    }
+    PASSWORD_RESETS {
+        int id PK
+        int user_id FK
+        text token_hash UK
+        text expires_at
+        text used_at
+    }
+    CUSTOMERS {
+        int id PK
+        int tenant_id FK
+        text full_name
+        text phone
+        text national_id
+    }
+    SUPPLIERS {
+        int id PK
+        int tenant_id FK
+        text name
+        text tax_no
+    }
+    DEVICES {
+        int id PK
+        int tenant_id FK
+        text brand
+        text model
+        text storage
+        text color
+        text imei "UK(tenant_id, imei)"
+        text serial_no
+        text barcode "UK(tenant_id, barcode)"
+        text condition
+        real purchase_price
+        real list_price
+        real sale_price
+        text status "in_stock|reserved|sold"
+        int reserved_for FK
+        int version "iyimser kilit"
+    }
+    TRANSACTIONS {
+        int id PK
+        int tenant_id FK
+        text type "purchase|sale|trade"
+        int customer_id FK
+        int supplier_id FK
+        real total_in
+        real total_out
+        real net_amount "takas bedeli"
+        text payment_method
+        text payment_status
+        text occurred_at
+        int user_id FK
+    }
+    TRANSACTION_ITEMS {
+        int id PK
+        int transaction_id FK
+        int device_id FK
+        text direction "in|out"
+        real unit_price
+        real unit_cost "kâr hesabı için sabitlenir"
+    }
+    STOCK_MOVEMENTS {
+        int id PK
+        int tenant_id FK
+        int device_id FK
+        text type
+        text from_status
+        text to_status
+        int transaction_id FK
+        int user_id FK
+    }
+    STOCK_COUNTS {
+        int id PK
+        int tenant_id FK
+        text status "open|closed"
+        int expected
+        int found
+        int missing
+    }
+    STOCK_COUNT_SCANS {
+        int id PK
+        int count_id FK
+        text code
+        int device_id FK
+        text result "ok|not_in_stock|unknown"
+    }
+    AUDIT_LOGS {
+        int id PK
+        int tenant_id FK
+        int user_id FK
+        text action
+        text entity
+        int entity_id
+        json details
+        text ip
+    }
